@@ -37,7 +37,6 @@ public class PokerGame {
     public PokerGame(PokerGameInterface listener) {
         this.viewListener = listener;
         this.players = new ArrayList<>();
-        this.phase = Phase.DEAL;
         this.setupDummyPlayers(5, 10000);
         this.dealerIndex = 0;
         this.pot = 0;
@@ -63,7 +62,7 @@ public class PokerGame {
         smallBlind = 1;
         bigBlind = 2;
         startDealPhase();
-    }
+    }t 
 
     public void startDealPhase() {
         playerIterator = new CircularIterator<>(players, dealerIndex+1);//don't start at the dealer!
@@ -90,9 +89,8 @@ public class PokerGame {
         }
 
         highestBet = bigBlind;
-
         playPhase(playerIterator.next());
-        nextPhase(Phase.FLOP);
+        nextPhase();
     }
 
 
@@ -171,10 +169,26 @@ public class PokerGame {
      * Handles the preparation for the start of a new phase.
      * - Collect pot, distribute chips out to winners, eliminate losers.
      */
-    public void nextPhase(Phase phase) {
+    public Phase nextPhase() {
         //prepare the board.
         collectToPot();
-        //TODO: Logic for choosing which phase should go next.
+        switch(phase){
+            case DEAL:
+                phase = Phase.FLOP;
+                break;
+            case FLOP:
+                phase = Phase.RIVER;
+                break;
+            case RIVER:
+                phase = Phase.TURN;
+                break;
+            case TURN:
+                newRound();
+                break;
+            case FINISHED:
+                break;
+        }
+        return phase;
     }
 
     /**
@@ -193,6 +207,9 @@ public class PokerGame {
 
         }
         return collected;
+    }
+    public void newRound(){
+        //TODO: handle newRound logic.
     }
     /*
     *
