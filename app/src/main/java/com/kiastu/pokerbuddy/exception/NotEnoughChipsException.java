@@ -1,4 +1,4 @@
-package com.kiastu.pokerbuddy.Exceptions;
+package com.kiastu.pokerbuddy.exception;
 
 /**
  * Created by dakong on 8/17/15.

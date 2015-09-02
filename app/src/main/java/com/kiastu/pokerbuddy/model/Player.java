@@ -1,6 +1,6 @@
-package com.kiastu.pokerbuddy.models;
+package com.kiastu.pokerbuddy.model;
 
-import com.kiastu.pokerbuddy.Exceptions.NotEnoughChipsException;
+import com.kiastu.pokerbuddy.exception.NotEnoughChipsException;
 
 /**
  * Created by dakong on 8/17/15.

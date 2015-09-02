@@ -1,11 +1,8 @@
-package com.kiastu.pokerbuddy.models;
+package com.kiastu.pokerbuddy.model;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/**
- * Created by dakong on 8/17/15.
- */
 public class CircularIterator<T> implements Iterator<T> {
     private int index = 0;
     private ArrayList<T> list;
@@ -21,11 +18,14 @@ public class CircularIterator<T> implements Iterator<T> {
     }
 
     public T next() {
+        T nextItem = list.get(index);
         if (index == list.size() - 1) {
             //reached the end of the array, loop back.
             index = 0;
+        }else{
+            index++;
         }
-        return list.get(index);
+        return nextItem;
     }
 
     public boolean hasNext() {

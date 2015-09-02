@@ -7,8 +7,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import com.kiastu.pokerbuddy.model.Phase;
+import com.kiastu.pokerbuddy.model.PlayerAction;
 
-public class MainActivity extends ActionBarActivity {
+
+public class MainActivity extends ActionBarActivity implements PokerGameInterface {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,4 +50,13 @@ public class MainActivity extends ActionBarActivity {
     public void newGame(){
 
     }
+
+    public PlayerAction onRequirePlayerAction(){
+        return new PlayerAction(PlayerAction.Action.ALLIN,0);
+    }
+    public void onPlayerTurnBegin(){}
+
+    public void onPlayerTurnEnd(){}
+    public void onPhaseStart(Phase currentPhase){}
+    public void onPhaseEnd(Phase currentPhase){}
 }

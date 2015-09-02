@@ -2,9 +2,11 @@ package com.kiastu.pokerbuddy;
 
 import android.util.Log;
 
-import com.kiastu.pokerbuddy.Exceptions.NotEnoughChipsException;
-import com.kiastu.pokerbuddy.models.CircularIterator;
-import com.kiastu.pokerbuddy.models.Player;
+import com.kiastu.pokerbuddy.exception.NotEnoughChipsException;
+import com.kiastu.pokerbuddy.model.CircularIterator;
+import com.kiastu.pokerbuddy.model.Phase;
+import com.kiastu.pokerbuddy.model.Player;
+import com.kiastu.pokerbuddy.model.PlayerAction;
 
 import java.util.ArrayList;
 
@@ -22,32 +24,30 @@ import java.util.ArrayList;
 //TODO: Write logic for split pots
 //TODO: Write logic for turn/river
 public class PokerGame {
-
-    public enum Phase {DEAL, FLOP, TURN, RIVER, FINISHED}
-
-    public enum Action {CALL, FOLD, RAISE, ALLIN}
-
     private Phase phase;
     private ArrayList<Player> players;
     private int pot, sidePot, dealerIndex, smallBlind, bigBlind, highestBet;
     private boolean betRaised;
     private Player raiser;
     CircularIterator<Player> playerIterator;
+    private PokerGameInterface viewListener;
 
     private static String TAG = "PokerGame";
 
-    public PokerGame() {
-        players = new ArrayList<>();
-        phase = Phase.DEAL;
-        setupDummyPlayers(5, 10000);
-        dealerIndex = 0;
-        pot = 0;
-        sidePot = 0;
-        betRaised = false;
-        smallBlind = 0;
-        bigBlind = 0;
-        playerIterator = new CircularIterator<>(players, 0);
+    public PokerGame(PokerGameInterface listener) {
+        this.viewListener = listener;
+        this.players = new ArrayList<>();
+        this.phase = Phase.DEAL;
+        this.setupDummyPlayers(5, 10000);
+        this.dealerIndex = 0;
+        this.pot = 0;
+        this.sidePot = 0;
+        this.betRaised = false;
+        this.smallBlind = 0;
+        this.bigBlind = 0;
+        this.playerIterator = new CircularIterator<>(players, 1);
     }
+
 
     public void setupDummyPlayers(int numPlayers, int startMoney) {
         if (numPlayers < 2) {
@@ -66,29 +66,25 @@ public class PokerGame {
     }
 
     public void startDealPhase() {
-        playerIterator = new CircularIterator<>(players, dealerIndex);
+        playerIterator = new CircularIterator<>(players, dealerIndex+1);//don't start at the dealer!
         //pay blinds
         try {
             Player smallPlayer = playerIterator.next();
             Player bigPlayer = playerIterator.next();
             if (smallPlayer.canBet(smallBlind)) {
                 smallPlayer.bet(smallBlind);
-            } else {
-                //can't afford the small blind.
-                if (smallPlayer.getChips() != 0) {
-                    //we can still afford something at least.
-                    smallPlayer.allIn();
-                    //TODO: Handle split pot
-                }
+            } else if (smallPlayer.getChips() != 0) {
+                //we can still afford something at least.
+                smallPlayer.allIn();
+                //TODO: Handle split pot
             }
             if (bigPlayer.canBet(bigBlind)) {
                 bigPlayer.bet(bigBlind);
-            } else {
-                if (bigPlayer.getChips() != 0) {
-                    bigPlayer.allIn();
-                    //TODO:Handle split pot
-                }
+            } else if (bigPlayer.getChips() != 0) {
+                bigPlayer.allIn();
+                //TODO:Handle split pot
             }
+
         } catch (NotEnoughChipsException e) {
             Log.e(TAG, "Player does not have enough chips to pay the blind.");
         }
@@ -103,12 +99,12 @@ public class PokerGame {
     public boolean takeTurn(Player player) {
         //logic for betting.
         if (player.isFolded()) {
-            return true;//no action for a player who folded.
+            return true;
         }
-        //TODO: Accept user input
-
-        int betAmount = 1337;
-        Action action = Action.CALL;
+        viewListener.onPlayerTurnBegin();
+        PlayerAction playerAction = viewListener.onRequirePlayerAction();
+        int betAmount = playerAction.getAmount();
+        PlayerAction.Action action = playerAction.getAction();
         switch (action) {
             case CALL: {
                 try {
@@ -116,11 +112,13 @@ public class PokerGame {
                 } catch (NotEnoughChipsException e) {
                     return false;
                 }
+                viewListener.onPlayerTurnEnd(PlayerAction.Action.CALL);
                 return true;
             }
 
             case FOLD: {
                 player.fold();
+                viewListener.onPlayerTurnEnd(PlayerAction.Action.FOLD);
                 break;
             }
             case RAISE: {
@@ -132,10 +130,12 @@ public class PokerGame {
                 } catch (NotEnoughChipsException e) {
                     return false;
                 }
+                viewListener.onPlayerTurnEnd(PlayerAction.Action.RAISE);
                 return true;
             }
             case ALLIN: {
                 highestBet = player.allIn();
+                viewListener.onPlayerTurnEnd(PlayerAction.Action.ALLIN);
                 return true;
             }
 
@@ -162,9 +162,11 @@ public class PokerGame {
             }
             //take a turn until they make an available action
             while (!takeTurn(currentPlayer)) {
+                Log.e(PokerGame.TAG, "Invalid action.");
             }
         }
     }
+
     /**
      * Handles the preparation for the start of a new phase.
      * - Collect pot, distribute chips out to winners, eliminate losers.
@@ -181,12 +183,13 @@ public class PokerGame {
     public void cleanOutLosers() {
         //TODO: Finish function
     }
+
     private int collectToPot() {
         int collected = 0;
         for (Player player : players) {
             int toPot = player.newRound();
-            pot +=  toPot;
-            collected+=toPot;
+            pot += toPot;
+            collected += toPot;
 
         }
         return collected;
