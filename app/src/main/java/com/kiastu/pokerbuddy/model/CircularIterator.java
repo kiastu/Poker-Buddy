@@ -27,6 +27,12 @@ public class CircularIterator<T> implements Iterator<T> {
         }
         return nextItem;
     }
+    public void setIndex(int index){
+        this.index = index;
+    }
+    public T getCurrent(){
+        return list.get(index);
+    }
 
     public boolean hasNext() {
         return !list.isEmpty();

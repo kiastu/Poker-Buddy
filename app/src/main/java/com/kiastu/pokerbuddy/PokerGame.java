@@ -60,30 +60,45 @@ public class PokerGame {
         Log.d(TAG, "Dummy players completed");
     }
 
-    public void playPhase(Player roundStarter) {
-
+    public void playRound(){
+        playerIterator = new CircularIterator<>(players,dealerIndex+1);
+        playPhase();
+    }
+    public void playPhase() {
         if(currentPhase == Phase.DEAL){
             payBlinds();
         }
-        Player checkPlayer = playerIterator.next();
 
+        Player roundStarter = playerIterator.getCurrent();
+        Player checkPlayer;
+        //go around the circle once, and let everyone make a decision.
         do {
-            takeTurn(checkPlayer);
             checkPlayer = playerIterator.next();
-        } while (!checkPlayer.equals(roundStarter));
+            while (!takeTurn(checkPlayer)) {
+                Log.e(PokerGame.TAG, "Invalid action.");
+            }
 
-        //handle the event that someone has raised.
+        } while (!checkPlayer.equals(roundStarter));
         while (betRaised) {
-            Player currentPlayer = playerIterator.next();
-            if (raiser.equals(currentPlayer)) {
+            checkPlayer = playerIterator.next();
+            if (raiser.equals(checkPlayer)) {
                 //it's looped back again.
                 betRaised = false;
             }
             //take a turn until they make an available action
-            while (!takeTurn(currentPlayer)) {
-                Log.e(PokerGame.TAG, "Invalid action.");
+            while (!takeTurn(checkPlayer)) {
+                Log.e(TAG, "Invalid action.");
             }
         }
+        //prepare for next phase
+        if(currentPhase == Phase.TURN){
+            //TODO: Winner logic
+
+            return;
+        }
+        nextPhase();
+        playerIterator.setIndex(dealerIndex+1);
+        playPhase();
     }
 
     public void payBlinds(){
@@ -121,7 +136,6 @@ public class PokerGame {
                 viewListener.onPlayerTurnEnd(PlayerAction.Action.CALL);
                 return true;
             }
-
             case FOLD: {
                 player.fold();
                 viewListener.onPlayerTurnEnd(PlayerAction.Action.FOLD);
@@ -155,6 +169,9 @@ public class PokerGame {
     public Phase nextPhase() {
         //prepare the board.
         collectToPot();
+        highestBet = 0;
+        raiser = null;
+        betRaised = false;
         switch(currentPhase){
             case DEAL:
                 currentPhase = Phase.FLOP;
