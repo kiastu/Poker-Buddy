@@ -2,7 +2,6 @@ package com.kiastu.pokerbuddy;
 
 import android.util.Log;
 
-import com.kiastu.pokerbuddy.exception.NotEnoughChipsException;
 import com.kiastu.pokerbuddy.model.CircularIterator;
 import com.kiastu.pokerbuddy.model.Phase;
 import com.kiastu.pokerbuddy.model.Player;
@@ -89,27 +88,21 @@ public class PokerGame {
 
     public void payBlinds(){
         //pay blinds
-        try {
-            Player smallPlayer = playerIterator.next();
-            Player bigPlayer = playerIterator.next();
-            if (smallPlayer.canBet(smallBlind)) {
-                smallPlayer.bet(smallBlind);
-            } else if (smallPlayer.getChips() != 0) {
-                //we can still afford something at least.
-                smallPlayer.allIn();
-                //TODO: Handle split pot
-            }
-            if (bigPlayer.canBet(bigBlind)) {
-                bigPlayer.bet(bigBlind);
-            } else if (bigPlayer.getChips() != 0) {
-                bigPlayer.allIn();
-                //TODO:Handle split pot
-            }
-
-        } catch (NotEnoughChipsException e) {
-            Log.e(TAG, "Player does not have enough chips to pay the blind.");
+        Player smallPlayer = playerIterator.next();
+        Player bigPlayer = playerIterator.next();
+        if (smallPlayer.canBet(smallBlind)) {
+            smallPlayer.bet(smallBlind);
+        } else if (smallPlayer.getChips() != 0) {
+            //we can still afford something at least.
+            smallPlayer.allIn();
+            //TODO: Handle split pot
         }
-
+        if (bigPlayer.canBet(bigBlind)) {
+            bigPlayer.bet(bigBlind);
+        } else if (bigPlayer.getChips() != 0) {
+            bigPlayer.allIn();
+            //TODO:Handle split pot
+        }
         highestBet = bigBlind;
     }
 
@@ -123,11 +116,8 @@ public class PokerGame {
         PlayerAction.Action action = playerAction.getAction();
         switch (action) {
             case CALL: {
-                try {
-                    player.call(highestBet);
-                } catch (NotEnoughChipsException e) {
-                    return false;
-                }
+                //must check.
+                player.call(highestBet);
                 viewListener.onPlayerTurnEnd(PlayerAction.Action.CALL);
                 return true;
             }
@@ -138,14 +128,11 @@ public class PokerGame {
                 break;
             }
             case RAISE: {
-                try {
+                //check valid raise
                     player.bet(betAmount);
                     highestBet += betAmount;
                     betRaised = true;
                     raiser = player;
-                } catch (NotEnoughChipsException e) {
-                    return false;
-                }
                 viewListener.onPlayerTurnEnd(PlayerAction.Action.RAISE);
                 return true;
             }

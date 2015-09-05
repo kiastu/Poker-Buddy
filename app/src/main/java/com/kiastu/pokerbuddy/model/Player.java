@@ -45,7 +45,7 @@ public class Player {
 
     public void bet(int amount) {
         if (chips < amount) {
-            Log.w(TAG,"Cannot bet the amount "+amount+". The player has "+chips" chips left. No bet placed.");
+            Log.w(TAG,"Cannot bet the amount "+amount+". The player has "+chips+" chips left. No bet placed.");
             amount = 0;
         }
         currentBet += amount;
@@ -101,7 +101,7 @@ public class Player {
         return isFolded;
     }
 
-    public boolean fold() {
+    public void fold() {
         this.isFolded = true;
     }
 
