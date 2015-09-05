@@ -24,9 +24,14 @@ import java.util.ArrayList;
 //TODO: Write logic for split pots
 //TODO: Write logic for turn/river
 public class PokerGame {
-    private Phase phase;
+    private Phase currentPhase;
     private ArrayList<Player> players;
-    private int pot, sidePot, dealerIndex, smallBlind, bigBlind, highestBet;
+    private int pot;
+    private int sidePot;
+    private int dealerIndex;
+    private int smallBlind;
+    private int bigBlind;
+    private int highestBet;
     private boolean betRaised;
     private Player raiser;
     CircularIterator<Player> playerIterator;
@@ -46,8 +51,6 @@ public class PokerGame {
         this.bigBlind = 0;
         this.playerIterator = new CircularIterator<>(players, 1);
     }
-
-
     public void setupDummyPlayers(int numPlayers, int startMoney) {
         if (numPlayers < 2) {
             Log.e(TAG, "Error, players can't be less than 2");
@@ -58,14 +61,33 @@ public class PokerGame {
         Log.d(TAG, "Dummy players completed");
     }
 
-    public void startGame() {
-        smallBlind = 1;
-        bigBlind = 2;
-        startDealPhase();
-    }t 
+    public void playPhase(Player roundStarter) {
 
-    public void startDealPhase() {
-        playerIterator = new CircularIterator<>(players, dealerIndex+1);//don't start at the dealer!
+        if(currentPhase == Phase.DEAL){
+            payBlinds();
+        }
+        Player checkPlayer = playerIterator.next();
+
+        do {
+            takeTurn(checkPlayer);
+            checkPlayer = playerIterator.next();
+        } while (!checkPlayer.equals(roundStarter));
+
+        //handle the event that someone has raised.
+        while (betRaised) {
+            Player currentPlayer = playerIterator.next();
+            if (raiser.equals(currentPlayer)) {
+                //it's looped back again.
+                betRaised = false;
+            }
+            //take a turn until they make an available action
+            while (!takeTurn(currentPlayer)) {
+                Log.e(PokerGame.TAG, "Invalid action.");
+            }
+        }
+    }
+
+    public void payBlinds(){
         //pay blinds
         try {
             Player smallPlayer = playerIterator.next();
@@ -89,17 +111,13 @@ public class PokerGame {
         }
 
         highestBet = bigBlind;
-        playPhase(playerIterator.next());
-        nextPhase();
     }
 
-
     public boolean takeTurn(Player player) {
-        //logic for betting.
+        viewListener.onPlayerTurnBegin();
         if (player.isFolded()) {
             return true;
         }
-        viewListener.onPlayerTurnBegin();
         PlayerAction playerAction = viewListener.onRequirePlayerAction();
         int betAmount = playerAction.getAmount();
         PlayerAction.Action action = playerAction.getAction();
@@ -141,46 +159,24 @@ public class PokerGame {
         return false;
     }
 
-    public void playPhase(Player roundStarter) {
 
-        //needs to go around the circle once.
-        Player checkPlayer = playerIterator.next();
-
-        do {
-            takeTurn(checkPlayer);
-            checkPlayer = playerIterator.next();
-        } while (!checkPlayer.equals(roundStarter));
-
-        //handle the event that someone has raised.
-        while (betRaised) {
-            Player currentPlayer = playerIterator.next();
-            if (raiser.equals(currentPlayer)) {
-                //it's looped back again.
-                betRaised = false;
-            }
-            //take a turn until they make an available action
-            while (!takeTurn(currentPlayer)) {
-                Log.e(PokerGame.TAG, "Invalid action.");
-            }
-        }
-    }
 
     /**
-     * Handles the preparation for the start of a new phase.
+     * Handles the preparation for the start of a new currentPhase.
      * - Collect pot, distribute chips out to winners, eliminate losers.
      */
     public Phase nextPhase() {
         //prepare the board.
         collectToPot();
-        switch(phase){
+        switch(currentPhase){
             case DEAL:
-                phase = Phase.FLOP;
+                currentPhase = Phase.FLOP;
                 break;
             case FLOP:
-                phase = Phase.RIVER;
+                currentPhase = Phase.RIVER;
                 break;
             case RIVER:
-                phase = Phase.TURN;
+                currentPhase = Phase.TURN;
                 break;
             case TURN:
                 newRound();
@@ -188,7 +184,7 @@ public class PokerGame {
             case FINISHED:
                 break;
         }
-        return phase;
+        return currentPhase;
     }
 
     /**
@@ -210,13 +206,16 @@ public class PokerGame {
     }
     public void newRound(){
         //TODO: handle newRound logic.
+        currentPhase = Phase.DEAL;
     }
-    /*
-    *
-     */
+    public void setSmallBlind(int smallBlind) {
+        this.smallBlind = smallBlind;
+    }
 
-    public class PokerGameBuilder {
-        //TODO: Create a builder to create a custom game with settings.
+    public void setBigBlind(int bigBlind) {
+        this.bigBlind = bigBlind;
     }
+
+
 
 }

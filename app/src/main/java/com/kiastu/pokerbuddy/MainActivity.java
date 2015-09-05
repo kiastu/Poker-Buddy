@@ -13,6 +13,7 @@ import com.kiastu.pokerbuddy.model.PlayerAction;
 
 public class MainActivity extends ActionBarActivity implements PokerGameInterface {
 
+    PokerGame game;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,16 +48,19 @@ public class MainActivity extends ActionBarActivity implements PokerGameInterfac
 
         return super.onOptionsItemSelected(item);
     }
-    public void newGame(){
+    private void startGame(){
+
+        while(game.playRound()){
+            //do something at the end of the round.
+        }
 
     }
-
     public PlayerAction onRequirePlayerAction(){
         return new PlayerAction(PlayerAction.Action.ALLIN,0);
     }
     public void onPlayerTurnBegin(){}
 
-    public void onPlayerTurnEnd(){}
+    public void onPlayerTurnEnd(PlayerAction.Action action){}
     public void onPhaseStart(Phase currentPhase){}
     public void onPhaseEnd(Phase currentPhase){}
 }

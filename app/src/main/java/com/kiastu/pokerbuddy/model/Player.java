@@ -1,6 +1,6 @@
 package com.kiastu.pokerbuddy.model;
 
-import com.kiastu.pokerbuddy.exception.NotEnoughChipsException;
+import android.util.Log;
 
 /**
  * Created by dakong on 8/17/15.
@@ -11,6 +11,8 @@ public class Player {
     private int currentBet;
     private boolean isAllIn;
     private boolean isFolded;
+
+    private String TAG = "Player";
 
     public Player() {
     }
@@ -41,9 +43,10 @@ public class Player {
     }
 
 
-    public void bet(int amount) throws NotEnoughChipsException {
+    public void bet(int amount) {
         if (chips < amount) {
-            throw new NotEnoughChipsException("Player's bet surpasses chips. ");
+            Log.w(TAG,"Cannot bet the amount "+amount+". The player has "+chips" chips left. No bet placed.");
+            amount = 0;
         }
         currentBet += amount;
         chips -= amount;
@@ -60,18 +63,21 @@ public class Player {
         return currentBet;
     }
 
-    public boolean call(int callAmount) throws NotEnoughChipsException {
+    public boolean call(int callAmount) {
 
         if(callAmount<currentBet){
             //TODO: Replace with log
-            System.out.println("Error with call, something's went wrong");
+            Log.e(TAG,"Error with attempted call, the call amount is already satisfied.");
             return false; //there's something wrong here...
         }
-        else if(callAmount>currentBet + chips){
-            throw new NotEnoughChipsException("Cannot call when you have no chips!");
+        if(canBet(callAmount-currentBet)){
+            bet(callAmount-currentBet);
+            return true;
+        }else{
+            Log.w(TAG,"Cannot bet the amount "+callAmount+". The player has "+chips+" chips left. No bet placed.");
+            return false;
         }
     }
-
 
     public int addChips(int amount) {
         if (amount != 0) {
@@ -80,7 +86,6 @@ public class Player {
         return chips += amount;
     }
 
-    //chose not to use bet() as I feel that this function should not throw an exception
     public int allIn(){
         currentBet += chips;
         chips = 0;
