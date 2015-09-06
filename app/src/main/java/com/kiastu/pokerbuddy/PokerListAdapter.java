@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -55,4 +54,8 @@ public class PokerListAdapter extends ArrayAdapter<Player> {
         }
         return rowView;
     }
+    public void setSelected(int index) {
+    //TODO: Change color in list for selected index.
+    }
+
 }

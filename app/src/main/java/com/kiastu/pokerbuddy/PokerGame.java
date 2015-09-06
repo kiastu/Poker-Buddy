@@ -5,7 +5,6 @@ import android.util.Log;
 import com.kiastu.pokerbuddy.model.CircularIterator;
 import com.kiastu.pokerbuddy.model.Phase;
 import com.kiastu.pokerbuddy.model.Player;
-import com.kiastu.pokerbuddy.model.PlayerAction;
 
 import java.util.ArrayList;
 
@@ -33,13 +32,13 @@ public class PokerGame {
     private int highestBet;
     private boolean betRaised;
     private Player raiser;
-    CircularIterator<Player> playerIterator;
-    private PokerGameInterface viewListener;
+    private CircularIterator<Player> playerIterator;
+    private Player roundStarter;
+    private Player currentPlayer;
 
     private static String TAG = "PokerGame";
 
-    public PokerGame(PokerGameInterface listener) {
-        this.viewListener = listener;
+    public PokerGame(){
         this.players = new ArrayList<>();
         this.setupDummyPlayers(5, 10000);
         this.dealerIndex = 0;
@@ -60,46 +59,6 @@ public class PokerGame {
         Log.d(TAG, "Dummy players completed");
     }
 
-    public void playRound(){
-        playerIterator = new CircularIterator<>(players,dealerIndex+1);
-        playPhase();
-    }
-    public void playPhase() {
-        if(currentPhase == Phase.DEAL){
-            payBlinds();
-        }
-
-        Player roundStarter = playerIterator.getCurrent();
-        Player checkPlayer;
-        //go around the circle once, and let everyone make a decision.
-        do {
-            checkPlayer = playerIterator.next();
-            while (!takeTurn(checkPlayer)) {
-                Log.e(PokerGame.TAG, "Invalid action.");
-            }
-
-        } while (!checkPlayer.equals(roundStarter));
-        while (betRaised) {
-            checkPlayer = playerIterator.next();
-            if (raiser.equals(checkPlayer)) {
-                //it's looped back again.
-                betRaised = false;
-            }
-            //take a turn until they make an available action
-            while (!takeTurn(checkPlayer)) {
-                Log.e(TAG, "Invalid action.");
-            }
-        }
-        //prepare for next phase
-        if(currentPhase == Phase.TURN){
-            //TODO: Winner logic
-
-            return;
-        }
-        nextPhase();
-        playerIterator.setIndex(dealerIndex+1);
-        playPhase();
-    }
 
     public void payBlinds(){
         //pay blinds
@@ -120,51 +79,6 @@ public class PokerGame {
         }
         highestBet = bigBlind;
     }
-
-    public boolean takeTurn(Player player) {
-        viewListener.onPlayerTurnBegin();
-        player.setCurrentPlayer(true);
-        if (player.isFolded()) {
-            return true;
-        }
-        PlayerAction playerAction = viewListener.onRequirePlayerAction();
-        int betAmount = playerAction.getAmount();
-        PlayerAction.Action action = playerAction.getAction();
-        switch (action) {
-            case CALL: {
-                //must check.
-                player.call(highestBet);
-                viewListener.onPlayerTurnEnd(PlayerAction.Action.CALL);
-                player.setCurrentPlayer(false);
-                return true;
-            }
-            case FOLD: {
-                player.fold();
-                viewListener.onPlayerTurnEnd(PlayerAction.Action.FOLD);
-                player.setCurrentPlayer(false);
-                return true;
-            }
-            case RAISE: {
-                //check valid raise
-                 player.bet(betAmount);
-                 highestBet += betAmount;
-                 betRaised = true;
-                 raiser = player;
-                viewListener.onPlayerTurnEnd(PlayerAction.Action.RAISE);
-                player.setCurrentPlayer(false);
-                return true;
-            }
-            case ALLIN: {
-                highestBet = player.allIn();
-                viewListener.onPlayerTurnEnd(PlayerAction.Action.ALLIN);
-                player.setCurrentPlayer(false);
-                return true;
-            }
-        }
-        return false;
-    }
-
-
 
     /**
      * Handles the preparation for the start of a new currentPhase.
@@ -224,6 +138,104 @@ public class PokerGame {
         this.bigBlind = bigBlind;
     }
 
+    public Phase getCurrentPhase() {
+        return currentPhase;
+    }
 
+    public void setCurrentPhase(Phase currentPhase) {
+        this.currentPhase = currentPhase;
+    }
 
+    public ArrayList<Player> getPlayers() {
+        return players;
+    }
+
+    public void setPlayers(ArrayList<Player> players) {
+        this.players = players;
+    }
+
+    public int getPot() {
+        return pot;
+    }
+
+    public void setPot(int pot) {
+        this.pot = pot;
+    }
+
+    public int getSidePot() {
+        return sidePot;
+    }
+
+    public void setSidePot(int sidePot) {
+        this.sidePot = sidePot;
+    }
+
+    public int getDealerIndex() {
+        return dealerIndex;
+    }
+
+    public void setDealerIndex(int dealerIndex) {
+        this.dealerIndex = dealerIndex;
+    }
+
+    public int getSmallBlind() {
+        return smallBlind;
+    }
+
+    public int getBigBlind() {
+        return bigBlind;
+    }
+
+    public int getHighestBet() {
+        return highestBet;
+    }
+
+    public void setHighestBet(int highestBet) {
+        this.highestBet = highestBet;
+    }
+
+    public boolean isBetRaised() {
+        return betRaised;
+    }
+
+    public void setBetRaised(boolean betRaised) {
+        this.betRaised = betRaised;
+    }
+
+    public Player getRaiser() {
+        return raiser;
+    }
+
+    public void setRaiser(Player raiser) {
+        this.raiser = raiser;
+    }
+
+    public CircularIterator<Player> getPlayerIterator() {
+        return playerIterator;
+    }
+
+    public void setPlayerIterator(CircularIterator<Player> playerIterator) {
+        this.playerIterator = playerIterator;
+    }
+
+    public Player getNextPlayer(){
+        currentPlayer = this.playerIterator.next();
+        return currentPlayer;
+    }
+
+    public Player getRoundStarter() {
+        return roundStarter;
+    }
+
+    public void setRoundStarter(Player roundStarter) {
+        this.roundStarter = roundStarter;
+    }
+
+    public Player getCurrentPlayer() {
+        return currentPlayer;
+    }
+
+    public void setCurrentPlayer(Player currentPlayer) {
+        this.currentPlayer = currentPlayer;
+    }
 }

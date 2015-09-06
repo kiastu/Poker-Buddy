@@ -11,7 +11,6 @@ public class Player {
     private int currentBet;
     private boolean isAllIn;
     private boolean isFolded;
-    private boolean isCurrentPlayer;
 
     private static String TAG = "Player";
 
@@ -35,7 +34,7 @@ public class Player {
     }
 
 
-    public float getChips() {
+    public int getChips() {
         return chips;
     }
 
@@ -45,39 +44,23 @@ public class Player {
 
 
     public void bet(int amount) {
-        if (chips < amount) {
-            Log.w(TAG,"Cannot bet the amount "+amount+". The player has "+chips+" chips left. No bet placed.");
-            amount = 0;
-        }
         currentBet += amount;
         chips -= amount;
     }
 
     public boolean canBet(int amount) {
-        if (amount > chips) {
+        if (amount - currentBet > chips) {
             return false;
         }
         return true;
     }
 
-    public float getCurrentBet() {
+    public int getCurrentBet() {
         return currentBet;
     }
 
-    public boolean call(int callAmount) {
-
-        if(callAmount<currentBet){
-            //TODO: Replace with log
-            Log.e(TAG,"Error with attempted call, the call amount is already satisfied.");
-            return false; //there's something wrong here...
-        }
-        if(canBet(callAmount-currentBet)){
+    public void call(int callAmount) {
             bet(callAmount-currentBet);
-            return true;
-        }else{
-            Log.w(TAG,"Cannot bet the amount "+callAmount+". The player has "+chips+" chips left. No bet placed.");
-            return false;
-        }
     }
 
     public int addChips(int amount) {
@@ -114,13 +97,4 @@ public class Player {
         return newBet;
 
     }
-
-    public boolean isCurrentPlayer() {
-        return isCurrentPlayer;
-    }
-
-    public void setCurrentPlayer(boolean isCurrentPlayer) {
-        this.isCurrentPlayer = isCurrentPlayer;
-    }
-
 }

@@ -2,6 +2,7 @@ package com.kiastu.pokerbuddy;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,15 +10,17 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.kiastu.pokerbuddy.model.Phase;
+import com.kiastu.pokerbuddy.model.Player;
 import com.kiastu.pokerbuddy.model.PlayerAction;
 
 
-public class MainActivity extends ActionBarActivity implements PokerGameInterface {
+public class MainActivity extends ActionBarActivity {
 
     private PokerGame game;
-    private Button ngButton,callButton,foldButton,raiseButton,allInButton;
+    private Button ngButton, callButton, foldButton, raiseButton, allInButton;
     private EditText raiseField;
-    private PlayerAction.Action chosenAction;
+    private boolean firstPass;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,42 +51,19 @@ public class MainActivity extends ActionBarActivity implements PokerGameInterfac
 
         return super.onOptionsItemSelected(item);
     }
-    private void startGame(){
-        game = new PokerGame(this);
-        game.playRound();
-    }
-    public PlayerAction onRequirePlayerAction(){
-        enableButtons();
-        //TODO: Fix hacky infinite loop here. Maybe needs to re-evaluate how much power the PokerGame class has.
-        while(chosenAction==null){
-        }
-        PlayerAction action;
 
-        if(chosenAction.equals(PlayerAction.Action.RAISE)){
-            action =  new PlayerAction(chosenAction,Integer.parseInt(raiseField.getText().toString()));
-        }
-        else{
-            action =  new PlayerAction(chosenAction,0);
-        }
-        raiseField.setText("");
-        chosenAction = null;
-        disableButtons();
-        return action;
+    private void startGame() {
+        game = new PokerGame();
+        playRound();
     }
-    public void onPlayerTurnBegin(){}
 
-    public void onPlayerTurnEnd(PlayerAction.Action action){}
-    public void onPhaseStart(Phase currentPhase){}
-    public void onPhaseEnd(Phase currentPhase){
-        updateUi();
-    }
-    private void initButtons(){
-        ngButton = (Button)findViewById(R.id.button_new_game);
-        callButton = (Button)findViewById(R.id.button_call);
-        foldButton = (Button)findViewById(R.id.button_fold);
-        raiseButton = (Button)findViewById(R.id.button_raise);
-        allInButton = (Button)findViewById(R.id.button_all_in);
-        raiseField = (EditText)findViewById(R.id.edit_raise_amount);
+    private void initButtons() {
+        ngButton = (Button) findViewById(R.id.button_new_game);
+        callButton = (Button) findViewById(R.id.button_call);
+        foldButton = (Button) findViewById(R.id.button_fold);
+        raiseButton = (Button) findViewById(R.id.button_raise);
+        allInButton = (Button) findViewById(R.id.button_all_in);
+        raiseField = (EditText) findViewById(R.id.edit_raise_amount);
 
         ngButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,40 +74,107 @@ public class MainActivity extends ActionBarActivity implements PokerGameInterfac
         callButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chosenAction = PlayerAction.Action.CALL;
+                takeTurn(PlayerAction.Action.CALL);
             }
         });
         foldButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chosenAction = PlayerAction.Action.FOLD;
+                takeTurn(PlayerAction.Action.FOLD);
             }
         });
         raiseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chosenAction = PlayerAction.Action.RAISE;
+                takeTurn(PlayerAction.Action.RAISE);
             }
-        });allInButton.setOnClickListener(new View.OnClickListener() {
+        });
+        allInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chosenAction = PlayerAction.Action.ALLIN;
+                takeTurn(PlayerAction.Action.ALLIN);
             }
         });
     }
-    private void enableButtons(){
+
+    private void enableButtons() {
         callButton.setEnabled(true);
         foldButton.setEnabled(true);
         raiseButton.setEnabled(true);
         allInButton.setEnabled(true);
     }
-    private void disableButtons(){
+
+    private void disableButtons() {
         callButton.setEnabled(false);
         foldButton.setEnabled(false);
         raiseButton.setEnabled(false);
         allInButton.setEnabled(false);
     }
-    private void updateUi(){
 
+    private void updateUi() {
+
+    }
+
+    public void playRound() {
+        game.getPlayerIterator().setIndex(game.getDealerIndex() + 1);
+        game.setRoundStarter(game.getPlayers().get(game.getDealerIndex() + 1));
+        playPhase();
+    }
+
+    public void playPhase() {
+        game.setCurrentPlayer(game.getRoundStarter());
+        firstPass = true;
+        if (game.getCurrentPhase() == Phase.DEAL) {
+            game.payBlinds();
+        }
+    }
+    public void endPhase(){
+        game.getPlayerIterator().setIndex(game.getDealerIndex() + 1);
+        //TODO:check for round end.
+    }
+
+    public void takeTurn(PlayerAction.Action action) {
+        Player currentPlayer = game.getCurrentPlayer();
+        if (currentPlayer.isFolded()||currentPlayer.isAllIn()) {
+            game.getNextPlayer();
+            return;
+        }
+        firstPass = false;
+        int raiseAmount = Integer.parseInt(raiseField.getText().toString());
+        switch (action) {
+            case CALL: {
+                if(currentPlayer.canBet(game.getHighestBet())){
+                    currentPlayer.call(game.getHighestBet());
+                }else{
+                    return;
+                }
+                break;
+            }
+            case FOLD: {
+                currentPlayer.fold();
+                break;
+            }
+            case RAISE: {
+                //check valid raise
+                if(currentPlayer.canBet(raiseAmount)){
+                    currentPlayer.bet(raiseAmount);
+                    game.setHighestBet(raiseAmount);
+                    game.setBetRaised(true);
+                }else{
+                    return;
+                }
+                break;
+            }
+            case ALLIN: {
+                currentPlayer.allIn();
+                break;
+            }
+        }
+        //TODO: Handle raises.
+        currentPlayer = game.getNextPlayer();
+        if(currentPlayer.equals(game.getRoundStarter()) && !game.isBetRaised()){
+            endPhase();
+        }
+        //TODO: Select next player.
     }
 }
