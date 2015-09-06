@@ -49,6 +49,7 @@ public class MainActivity extends ActionBarActivity implements PokerGameInterfac
         return super.onOptionsItemSelected(item);
     }
     private void startGame(){
+        game = new PokerGame(this);
         game.playRound();
     }
     public PlayerAction onRequirePlayerAction(){

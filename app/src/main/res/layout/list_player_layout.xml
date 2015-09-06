@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/player_row"
+    android:background="#222"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:orientation="horizontal">
+    <TextView
+        android:id="@+id/text_player_name"
+        android:text="I'm a player's name"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"/>
+    <TextView
+        android:id="@+id/text_player_chips"
+        android:text="I'm player's chips."
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"/>
+    <TextView
+        android:id="@+id/text_player_current_bet"
+        android:text="I'm the player's current bet"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"/>
+    <TextView
+        android:id="@+id/text_player_is_folded"
+        android:text="No"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"/>
+
+
+</LinearLayout>

@@ -123,6 +123,7 @@ public class PokerGame {
 
     public boolean takeTurn(Player player) {
         viewListener.onPlayerTurnBegin();
+        player.setCurrentPlayer(true);
         if (player.isFolded()) {
             return true;
         }
@@ -134,28 +135,31 @@ public class PokerGame {
                 //must check.
                 player.call(highestBet);
                 viewListener.onPlayerTurnEnd(PlayerAction.Action.CALL);
+                player.setCurrentPlayer(false);
                 return true;
             }
             case FOLD: {
                 player.fold();
                 viewListener.onPlayerTurnEnd(PlayerAction.Action.FOLD);
-                break;
+                player.setCurrentPlayer(false);
+                return true;
             }
             case RAISE: {
                 //check valid raise
-                    player.bet(betAmount);
-                    highestBet += betAmount;
-                    betRaised = true;
-                    raiser = player;
+                 player.bet(betAmount);
+                 highestBet += betAmount;
+                 betRaised = true;
+                 raiser = player;
                 viewListener.onPlayerTurnEnd(PlayerAction.Action.RAISE);
+                player.setCurrentPlayer(false);
                 return true;
             }
             case ALLIN: {
                 highestBet = player.allIn();
                 viewListener.onPlayerTurnEnd(PlayerAction.Action.ALLIN);
+                player.setCurrentPlayer(false);
                 return true;
             }
-
         }
         return false;
     }

@@ -11,8 +11,9 @@ public class Player {
     private int currentBet;
     private boolean isAllIn;
     private boolean isFolded;
+    private boolean isCurrentPlayer;
 
-    private String TAG = "Player";
+    private static String TAG = "Player";
 
     public Player() {
     }
@@ -113,4 +114,13 @@ public class Player {
         return newBet;
 
     }
+
+    public boolean isCurrentPlayer() {
+        return isCurrentPlayer;
+    }
+
+    public void setCurrentPlayer(boolean isCurrentPlayer) {
+        this.isCurrentPlayer = isCurrentPlayer;
+    }
+
 }
