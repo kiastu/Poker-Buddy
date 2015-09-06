@@ -14,18 +14,22 @@ import com.kiastu.pokerbuddy.model.Player;
 import com.kiastu.pokerbuddy.model.PlayerAction;
 
 
+//TODO: Write unit test for logic
+//TODO: Add next phase/ next round button
 public class MainActivity extends ActionBarActivity {
 
     private PokerGame game;
     private Button ngButton, callButton, foldButton, raiseButton, allInButton;
     private EditText raiseField;
-    private boolean firstPass;
-
+    private PokerListAdapter pokerListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //TODO: Remove dummy data set.
+        game.setupDummyPlayers(5,10000);
+        pokerListAdapter = new PokerListAdapter(this,game.getPlayers());
         initButtons();
         disableButtons();
     }
@@ -123,29 +127,37 @@ public class MainActivity extends ActionBarActivity {
 
     public void playPhase() {
         game.setCurrentPlayer(game.getRoundStarter());
-        firstPass = true;
         if (game.getCurrentPhase() == Phase.DEAL) {
             game.payBlinds();
         }
     }
-    public void endPhase(){
+
+    public void endPhase() {
+
+        //TODO: Collect chips and and reset table.
         game.getPlayerIterator().setIndex(game.getDealerIndex() + 1);
-        //TODO:check for round end.
+        if(game.nextPhase()==Phase.DEAL){
+            //new round.
+            game.newRound();
+        }
     }
 
     public void takeTurn(PlayerAction.Action action) {
         Player currentPlayer = game.getCurrentPlayer();
-        if (currentPlayer.isFolded()||currentPlayer.isAllIn()) {
+        if (currentPlayer.isFolded() || currentPlayer.isAllIn()) {
             game.getNextPlayer();
             return;
         }
-        firstPass = false;
+        if(game.isBetRaised() && currentPlayer.equals(game.getRaiser())){
+            //end the phase. We've come back to the same person.
+            endPhase();
+        }
         int raiseAmount = Integer.parseInt(raiseField.getText().toString());
         switch (action) {
             case CALL: {
-                if(currentPlayer.canBet(game.getHighestBet())){
+                if (currentPlayer.canBet(game.getHighestBet())) {
                     currentPlayer.call(game.getHighestBet());
-                }else{
+                } else {
                     return;
                 }
                 break;
@@ -156,11 +168,13 @@ public class MainActivity extends ActionBarActivity {
             }
             case RAISE: {
                 //check valid raise
-                if(currentPlayer.canBet(raiseAmount)){
+                if (currentPlayer.canBet(raiseAmount)) {
                     currentPlayer.bet(raiseAmount);
+                    //TODO: Change raise to one function.
                     game.setHighestBet(raiseAmount);
+                    game.setRaiser(currentPlayer);
                     game.setBetRaised(true);
-                }else{
+                } else {
                     return;
                 }
                 break;
@@ -170,11 +184,11 @@ public class MainActivity extends ActionBarActivity {
                 break;
             }
         }
-        //TODO: Handle raises.
         currentPlayer = game.getNextPlayer();
-        if(currentPlayer.equals(game.getRoundStarter()) && !game.isBetRaised()){
+        if (currentPlayer.equals(game.getRoundStarter()) && !game.isBetRaised()) {
             endPhase();
         }
-        //TODO: Select next player.
+        pokerListAdapter.setSelected(game.getPlayerIterator().getIndex());
+        updateUi();
     }
 }

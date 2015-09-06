@@ -18,7 +18,6 @@ import java.util.ArrayList;
  * Set it from chips to currency. Poker night boissss
  */
 
-//TODO: Write unit test for logic
 //TODO: Write logic for split pots
 //TODO: Write logic for turn/river
 public class PokerGame {
