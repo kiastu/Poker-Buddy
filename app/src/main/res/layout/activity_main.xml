@@ -11,6 +11,40 @@
         android:layout_height="wrap_content"
         android:padding="3dp"
         android:text="New Game"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/button_call"
+            android:text="Call"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+        <Button
+            android:id="@+id/button_fold"
+            android:text="Fold"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+        <Button
+            android:id="@+id/button_raise"
+            android:text="Raise"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+        <Button
+            android:id="@+id/button_all_in"
+            android:text="All In"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+    <EditText
+        android:id="@+id/edit_raise_amount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <TableLayout
         android:layout_width="match_parent"

@@ -6,6 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 import com.kiastu.pokerbuddy.model.Phase;
 import com.kiastu.pokerbuddy.model.PlayerAction;
@@ -13,18 +14,17 @@ import com.kiastu.pokerbuddy.model.PlayerAction;
 
 public class MainActivity extends ActionBarActivity implements PokerGameInterface {
 
-    PokerGame game;
+    private PokerGame game;
+    private Button ngButton,callButton,foldButton,raiseButton,allInButton;
+    private EditText raiseField;
+    private PlayerAction.Action chosenAction;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Button ngButton = (Button)findViewById(R.id.button_new_game);
-        ngButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // create new game.
-            }
-        });
+        initButtons();
+        disableButtons();
     }
 
     @Override
@@ -53,11 +53,81 @@ public class MainActivity extends ActionBarActivity implements PokerGameInterfac
         game.playRound();
     }
     public PlayerAction onRequirePlayerAction(){
-        return new PlayerAction(PlayerAction.Action.ALLIN,0);
+        enableButtons();
+        //TODO: Fix hacky infinite loop here. Maybe needs to re-evaluate how much power the PokerGame class has.
+        while(chosenAction==null){
+        }
+        PlayerAction action;
+
+        if(chosenAction.equals(PlayerAction.Action.RAISE)){
+            action =  new PlayerAction(chosenAction,Integer.parseInt(raiseField.getText().toString()));
+        }
+        else{
+            action =  new PlayerAction(chosenAction,0);
+        }
+        raiseField.setText("");
+        chosenAction = null;
+        disableButtons();
+        return action;
     }
     public void onPlayerTurnBegin(){}
 
     public void onPlayerTurnEnd(PlayerAction.Action action){}
     public void onPhaseStart(Phase currentPhase){}
-    public void onPhaseEnd(Phase currentPhase){}
+    public void onPhaseEnd(Phase currentPhase){
+        updateUi();
+    }
+    private void initButtons(){
+        ngButton = (Button)findViewById(R.id.button_new_game);
+        callButton = (Button)findViewById(R.id.button_call);
+        foldButton = (Button)findViewById(R.id.button_fold);
+        raiseButton = (Button)findViewById(R.id.button_raise);
+        allInButton = (Button)findViewById(R.id.button_all_in);
+        raiseField = (EditText)findViewById(R.id.edit_raise_amount);
+
+        ngButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // create new game.
+            }
+        });
+        callButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chosenAction = PlayerAction.Action.CALL;
+            }
+        });
+        foldButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chosenAction = PlayerAction.Action.FOLD;
+            }
+        });
+        raiseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chosenAction = PlayerAction.Action.RAISE;
+            }
+        });allInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chosenAction = PlayerAction.Action.ALLIN;
+            }
+        });
+    }
+    private void enableButtons(){
+        callButton.setEnabled(true);
+        foldButton.setEnabled(true);
+        raiseButton.setEnabled(true);
+        allInButton.setEnabled(true);
+    }
+    private void disableButtons(){
+        callButton.setEnabled(false);
+        foldButton.setEnabled(false);
+        raiseButton.setEnabled(false);
+        allInButton.setEnabled(false);
+    }
+    private void updateUi(){
+
+    }
 }
