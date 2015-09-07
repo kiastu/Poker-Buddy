@@ -19,11 +19,10 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Pl
     private Context context;
     private int currentPlayerIndex;
 
-    public PlayerListAdapter(Context context, List<Player> playerList, int currentPlayerIndex) {
+    public PlayerListAdapter(Context context, List<Player> playerList) {
         this.playerList = playerList;
         this.context = context;
-        setSelected(currentPlayerIndex);
-
+        this.currentPlayerIndex = 0;
     }
 
     @Override
@@ -65,6 +64,7 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Pl
             currentPlayerIndex = 0;
         }
         currentPlayerIndex = index + 1;
+        notifyDataSetChanged();
     }
     public static class PlayerViewHolder extends RecyclerView.ViewHolder {
         protected LinearLayout rowView;

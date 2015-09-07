@@ -92,8 +92,8 @@
         android:layout_height="wrap_content"
         android:text="Pot Amount: -"/>
     <TextView
-        android:id="@+id/text_current_bet"
+        android:id="@+id/text_highest_bet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Top Bet: -"/>
+        android:text="Highest Bet: - "/>
 </LinearLayout>

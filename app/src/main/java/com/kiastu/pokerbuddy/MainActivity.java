@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.kiastu.pokerbuddy.model.Phase;
 import com.kiastu.pokerbuddy.model.Player;
@@ -23,6 +24,7 @@ public class MainActivity extends Activity {
     private EditText raiseField;
     private PlayerListAdapter playerListAdapter;
     private RecyclerView playerListView;
+    private TextView highestBetText, potText;
     private boolean firstPass;
 
     @Override
@@ -30,14 +32,15 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initButtons();
+        initText();
         disableButtons();
-        startGame();
-        playerListAdapter = new PlayerListAdapter(this,game.getPlayers(),game.getCurrentPlayerIndex());
-        playerListView = (RecyclerView)findViewById(R.id.player_list);
+        newGame();
+        playerListAdapter = new PlayerListAdapter(this, game.getPlayers());
+        playerListView = (RecyclerView) findViewById(R.id.player_list);
         playerListView.setHasFixedSize(true);
         playerListView.setLayoutManager(new LinearLayoutManager(this));
         playerListView.setAdapter(playerListAdapter);
-
+        startGame();
     }
 
     @Override
@@ -68,11 +71,11 @@ public class MainActivity extends Activity {
         foldButton = (Button) findViewById(R.id.button_fold);
         raiseButton = (Button) findViewById(R.id.button_raise);
         allInButton = (Button) findViewById(R.id.button_all_in);
-        raiseField = (EditText) findViewById(R.id.edit_raise_amount);
 
         ngButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                newGame();
                 startGame();
             }
         });
@@ -102,6 +105,18 @@ public class MainActivity extends Activity {
         });
     }
 
+    private void initText() {
+        raiseField = (EditText) findViewById(R.id.edit_raise_amount);
+        highestBetText = (TextView) findViewById(R.id.text_highest_bet);
+        potText = (TextView) findViewById(R.id.text_pot_amount);
+
+    }
+
+    private void newGame() {
+        game = new PokerGame();
+        game.setupDummyPlayers(5, 10000);
+    }
+
     private void enableButtons() {
         callButton.setEnabled(true);
         foldButton.setEnabled(true);
@@ -118,21 +133,31 @@ public class MainActivity extends Activity {
 
     private void updateUi() {
         //TODO: Consider passing only changes to the adapter, and doing a full sync periodically? (improves efficency)
+        playerListAdapter.setSelected(game.getCurrentPlayerIndex());
         playerListAdapter.setPlayerList(game.getPlayers());
         playerListAdapter.notifyDataSetChanged();
+        highestBetText.setText("Highest Bet: " + game.getHighestBet());
+        if (game.getPot() == 0) {
+            potText.setText("Current Pot: - ");
+        } else {
+            potText.setText("Current Pot: " + game.getPot());
+        }
     }
+
     private void startGame() {
-        game = new PokerGame();
-        game.setupDummyPlayers(5,10000);
+        //TODO: Add other things to do before starting a game.
         startRound();
     }
+
     public void startRound() {
         game.startRound();
+        updateUi();
         startPhase();
     }
 
     public void startPhase() {
         game.startPhase();
+        updateUi();
         enableButtons();
         firstPass = true;
     }
@@ -141,7 +166,7 @@ public class MainActivity extends Activity {
 
         //TODO: Collect chips and and reset table.
 
-        if(game.nextPhase()==Phase.DEAL){
+        if (game.nextPhase() == Phase.DEAL) {
             //new round.
             game.startRound();
             return;
@@ -152,7 +177,7 @@ public class MainActivity extends Activity {
         disableButtons();
         Player currentPlayer = game.getNextPlayer();
 
-        if (currentPlayer.equals(game.getRoundStarter()) && !game.isBetRaised()&&!firstPass) {
+        if (currentPlayer.equals(game.getRoundStarter()) && !game.isBetRaised() && !firstPass) {
             endPhase();
         }
 
@@ -160,7 +185,7 @@ public class MainActivity extends Activity {
             game.getNextPlayer();
             return;
         }
-        if(game.isBetRaised() && currentPlayer.equals(game.getRaiser())){
+        if (game.isBetRaised() && currentPlayer.equals(game.getRaiser())) {
             //end the phase. We've come back to the same person.
             endPhase();
         }
@@ -196,7 +221,6 @@ public class MainActivity extends Activity {
                 break;
             }
         }
-        playerListAdapter.setSelected(game.getCurrentPlayerIndex());
         firstPass = false;
         enableButtons();
         updateUi();
