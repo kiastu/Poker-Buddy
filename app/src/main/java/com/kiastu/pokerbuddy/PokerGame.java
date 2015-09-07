@@ -2,11 +2,11 @@ package com.kiastu.pokerbuddy;
 
 import android.util.Log;
 
-import com.kiastu.pokerbuddy.model.CircularIterator;
 import com.kiastu.pokerbuddy.model.Phase;
 import com.kiastu.pokerbuddy.model.Player;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * This is the base poker class, played with no restrictions on the raise amount/intervals.
@@ -19,7 +19,6 @@ import java.util.ArrayList;
 //TODO: Write logic for split pots
 //TODO: Write logic for turn/river
 //TODO: Write function for ALLIN to take in to account the highestBet.
-//TODO: Fix my weird iterator.
 public class PokerGame {
     private Phase currentPhase;
     private ArrayList<Player> players;
@@ -31,7 +30,7 @@ public class PokerGame {
     private int highestBet;
     private boolean betRaised;
     private Player raiser;
-    private CircularIterator<Player> playerIterator;
+    private CircularIterator playerIterator;
     private Player roundStarter;
     private Player currentPlayer;
 
@@ -43,10 +42,10 @@ public class PokerGame {
         this.pot = 0;
         this.sidePot = 0;
         this.betRaised = false;
-        this.smallBlind = 0;
-        this.bigBlind = 0;
+        this.smallBlind = 1;
+        this.bigBlind = 2;
         this.currentPhase = Phase.DEAL;
-        this.playerIterator = new CircularIterator<>(players, 0);
+        this.playerIterator = new CircularIterator(0);
     }
     public void setupDummyPlayers(int numPlayers, int startMoney) {
         if (numPlayers < 2) {
@@ -59,7 +58,11 @@ public class PokerGame {
         Log.d(TAG, "Dummy players completed");
     }
 
-
+    public void startRound(){
+        currentPhase = Phase.DEAL;
+        playerIterator.setIndex(dealerIndex + 1);
+    }
+    //Maybe put startPhase here?
     public void payBlinds(){
         //pay blinds
         Player smallPlayer = playerIterator.next();
@@ -70,12 +73,21 @@ public class PokerGame {
             smallPlayer.allIn();
             //TODO: Handle split pot
         }
+        playerIterator.setCurrent(smallPlayer);
+
         Player bigPlayer = playerIterator.next();
         if (bigPlayer.canBet(bigBlind)) {
             bigPlayer.bet(bigBlind);
         } else if (bigPlayer.getChips() != 0) {
             bigPlayer.allIn();
             //TODO:Handle split pot
+        }
+        playerIterator.setCurrent(bigPlayer);
+        //mark the round starter properly.
+        if(playerIterator.getIndex()+1>players.size()){
+            roundStarter = players.get(0);
+        }else{
+            roundStarter = players.get(playerIterator.getIndex()+1);
         }
         highestBet = bigBlind;
     }
@@ -130,16 +142,15 @@ public class PokerGame {
         }
         return collected;
     }
-    public void newRound(){
-        //TODO: handle newRound logic.
-        currentPhase = Phase.DEAL;
-    }
 
     public void raise(int raiseAmount){
         currentPlayer.bet(raiseAmount);
         setHighestBet(raiseAmount);
         setRaiser(currentPlayer);
         setBetRaised(true);
+    }
+    public void allIn(){
+        setHighestBet(currentPlayer.allIn());
     }
     public void setSmallBlind(int smallBlind) {
         this.smallBlind = smallBlind;
@@ -221,17 +232,16 @@ public class PokerGame {
         this.raiser = raiser;
     }
 
-    public CircularIterator<Player> getPlayerIterator() {
+    public CircularIterator getPlayerIterator() {
         return playerIterator;
     }
 
-    public void setPlayerIterator(CircularIterator<Player> playerIterator) {
+    public void setPlayerIterator(CircularIterator playerIterator) {
         this.playerIterator = playerIterator;
     }
 
     public Player getNextPlayer(){
-        currentPlayer = this.playerIterator.next();
-        return currentPlayer;
+        return this.playerIterator.next();
     }
 
     public Player getRoundStarter() {
@@ -248,5 +258,42 @@ public class PokerGame {
 
     public void setCurrentPlayer(Player currentPlayer) {
         this.currentPlayer = currentPlayer;
+    }
+
+    public class CircularIterator implements Iterator<Player> {
+        private int index = 0;
+
+        public CircularIterator(int index) {
+            this.index = index -1; //next() will work properly.
+        }
+
+        public void remove() {
+            players.remove(index);
+            this.index--;//otherwise when they call next, we'd accidentally skip an element.
+        }
+
+        public Player next() {
+            if (index == players.size() - 1) {
+                //reached the end of the array, loop back.
+                index = 0;
+            }else{
+                index++;
+            }
+            Player nextItem = players.get(index);
+            currentPlayer = nextItem;
+
+            return nextItem;
+        }
+        public void setCurrent(Player player){
+            players.set(index, player);
+        }
+        public void setIndex(int index){
+            this.index = index;
+        }
+        public int getIndex(){return index;}
+
+        public boolean hasNext() {
+            return !players.isEmpty();
+        }
     }
 }

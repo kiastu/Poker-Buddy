@@ -29,17 +29,15 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //TODO: Remove dummy data set.
-        game = new PokerGame();
-        game.setupDummyPlayers(5,10000);
+        initButtons();
+        disableButtons();
+        startGame();
         playerListAdapter = new PlayerListAdapter(this,game.getPlayers());
         playerListView = (RecyclerView)findViewById(R.id.player_list);
         playerListView.setHasFixedSize(true);
         playerListView.setLayoutManager(new LinearLayoutManager(this));
         playerListView.setAdapter(playerListAdapter);
-        initButtons();
-        disableButtons();
-        startGame();
+
     }
 
     @Override
@@ -62,13 +60,6 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void startGame() {
-        game = new PokerGame();
-        game.setupDummyPlayers(5,10000);
-        playerListAdapter.notifyDataSetChanged();
-        playRound();
     }
 
     private void initButtons() {
@@ -130,14 +121,17 @@ public class MainActivity extends Activity {
         playerListAdapter.setPlayerList(game.getPlayers());
         playerListAdapter.notifyDataSetChanged();
     }
-
-    public void playRound() {
-        game.getPlayerIterator().setIndex(game.getDealerIndex() + 1);
-        game.setRoundStarter(game.getPlayers().get(game.getDealerIndex() + 1));
-        playPhase();
+    private void startGame() {
+        game = new PokerGame();
+        game.setupDummyPlayers(5,10000);
+        startRound();
+    }
+    public void startRound() {
+        game.startRound();
+        startPhase();
     }
 
-    public void playPhase() {
+    public void startPhase() {
         game.setCurrentPlayer(game.getRoundStarter());
         if (game.getCurrentPhase() == Phase.DEAL) {
             game.payBlinds();
@@ -152,7 +146,7 @@ public class MainActivity extends Activity {
 
         if(game.nextPhase()==Phase.DEAL){
             //new round.
-            game.newRound();
+            game.startRound();
             return;
         }
         game.getPlayerIterator().setIndex(game.getDealerIndex() + 1);
