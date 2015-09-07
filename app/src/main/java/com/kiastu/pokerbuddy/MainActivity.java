@@ -1,8 +1,9 @@
 package com.kiastu.pokerbuddy;
 
-import android.support.v7.app.ActionBarActivity;
+import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,22 +17,29 @@ import com.kiastu.pokerbuddy.model.PlayerAction;
 
 //TODO: Write unit test for logic
 //TODO: Add next phase/ next round button
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
     private PokerGame game;
     private Button ngButton, callButton, foldButton, raiseButton, allInButton;
     private EditText raiseField;
-    private PokerListAdapter pokerListAdapter;
+    private PlayerListAdapter playerListAdapter;
+    private RecyclerView playerListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //TODO: Remove dummy data set.
+        game = new PokerGame();
         game.setupDummyPlayers(5,10000);
-        pokerListAdapter = new PokerListAdapter(this,game.getPlayers());
+        playerListAdapter = new PlayerListAdapter(this,game.getPlayers());
+        playerListView = (RecyclerView)findViewById(R.id.player_list);
+        playerListView.setHasFixedSize(true);
+        playerListView.setLayoutManager(new LinearLayoutManager(this));
+        playerListView.setAdapter(playerListAdapter);
         initButtons();
         disableButtons();
+        startGame();
     }
 
     @Override
@@ -57,7 +65,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void startGame() {
-        game = new PokerGame();
         playRound();
     }
 
@@ -130,19 +137,24 @@ public class MainActivity extends ActionBarActivity {
         if (game.getCurrentPhase() == Phase.DEAL) {
             game.payBlinds();
         }
+        enableButtons();
     }
 
     public void endPhase() {
 
         //TODO: Collect chips and and reset table.
-        game.getPlayerIterator().setIndex(game.getDealerIndex() + 1);
+
         if(game.nextPhase()==Phase.DEAL){
             //new round.
             game.newRound();
+            return;
         }
+        game.getPlayerIterator().setIndex(game.getDealerIndex() + 1);
+
     }
 
     public void takeTurn(PlayerAction.Action action) {
+        disableButtons();
         Player currentPlayer = game.getCurrentPlayer();
         if (currentPlayer.isFolded() || currentPlayer.isAllIn()) {
             game.getNextPlayer();
@@ -168,12 +180,8 @@ public class MainActivity extends ActionBarActivity {
             }
             case RAISE: {
                 //check valid raise
-                if (currentPlayer.canBet(raiseAmount)) {
-                    currentPlayer.bet(raiseAmount);
-                    //TODO: Change raise to one function.
-                    game.setHighestBet(raiseAmount);
-                    game.setRaiser(currentPlayer);
-                    game.setBetRaised(true);
+                if (currentPlayer.canBet(raiseAmount) && raiseAmount > game.getHighestBet()) {
+                    game.raise(raiseAmount);
                 } else {
                     return;
                 }
@@ -188,7 +196,8 @@ public class MainActivity extends ActionBarActivity {
         if (currentPlayer.equals(game.getRoundStarter()) && !game.isBetRaised()) {
             endPhase();
         }
-        pokerListAdapter.setSelected(game.getPlayerIterator().getIndex());
+        playerListAdapter.setSelected(game.getPlayerIterator().getIndex());
+        enableButtons();
         updateUi();
     }
 }

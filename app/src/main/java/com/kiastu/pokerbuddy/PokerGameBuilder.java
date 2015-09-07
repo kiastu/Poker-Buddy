@@ -4,9 +4,8 @@ package com.kiastu.pokerbuddy;
 public class PokerGameBuilder {
     private PokerGame pokerGame;
     public PokerGameBuilder(){
-        pokerGame = new PokerGame(null);
+        pokerGame = new PokerGame();
     }
-
     private PokerGame build(){
         return pokerGame;
     }

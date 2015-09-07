@@ -9,13 +9,11 @@ import com.kiastu.pokerbuddy.model.Player;
 import java.util.ArrayList;
 
 /**
- * Created by dakong on 8/17/15.
  * This is the base poker class, played with no restrictions on the raise amount/intervals.
  * In the future, the different games will be inherited classes from PokerGame.
  * <p/>
  * Notes:
- * Alastair:
- * Set it from chips to currency. Poker night boissss
+ * Alastair: Set it from chips to currency. Poker night boissss
  */
 
 //TODO: Write logic for split pots
@@ -39,13 +37,13 @@ public class PokerGame {
 
     public PokerGame(){
         this.players = new ArrayList<>();
-        this.setupDummyPlayers(5, 10000);
         this.dealerIndex = 0;
         this.pot = 0;
         this.sidePot = 0;
         this.betRaised = false;
         this.smallBlind = 0;
         this.bigBlind = 0;
+        this.currentPhase = Phase.DEAL;
         this.playerIterator = new CircularIterator<>(players, 1);
     }
     public void setupDummyPlayers(int numPlayers, int startMoney) {
@@ -54,6 +52,7 @@ public class PokerGame {
         }
         for (int i = 0; i < numPlayers; i++) {
             Player dummy = new Player("Player" + i, startMoney);
+            players.add(dummy);
         }
         Log.d(TAG, "Dummy players completed");
     }
@@ -100,7 +99,7 @@ public class PokerGame {
                 currentPhase = Phase.TURN;
                 break;
             case TURN:
-                newRound();
+                currentPhase = Phase.DEAL;
                 break;
             case FINISHED:
                 break;
@@ -112,7 +111,7 @@ public class PokerGame {
      * Call this method at the end of a round to eliminate any losers without chips.
      */
     public void cleanOutLosers() {
-        //TODO: Finish function
+                    //TODO: Finish function
     }
 
     private int collectToPot() {
@@ -121,13 +120,19 @@ public class PokerGame {
             int toPot = player.newRound();
             pot += toPot;
             collected += toPot;
-
         }
         return collected;
     }
     public void newRound(){
         //TODO: handle newRound logic.
         currentPhase = Phase.DEAL;
+    }
+
+    public void raise(int raiseAmount){
+        currentPlayer.bet(raiseAmount);
+        setHighestBet(raiseAmount);
+        setRaiser(currentPlayer);
+        setBetRaised(true);
     }
     public void setSmallBlind(int smallBlind) {
         this.smallBlind = smallBlind;

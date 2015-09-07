@@ -44,7 +44,9 @@
     <EditText
         android:id="@+id/edit_raise_amount"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:text="0"/>
 
     <TableLayout
         android:layout_width="match_parent"
@@ -80,7 +82,7 @@
                 android:layout_weight="1"/>
         </TableRow>
     </TableLayout>
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/player_list"
         android:layout_width="match_parent"
         android:layout_height="275dp"/>
