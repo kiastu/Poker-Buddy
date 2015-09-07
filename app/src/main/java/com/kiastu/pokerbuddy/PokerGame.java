@@ -18,6 +18,8 @@ import java.util.ArrayList;
 
 //TODO: Write logic for split pots
 //TODO: Write logic for turn/river
+//TODO: Write function for ALLIN to take in to account the highestBet.
+//TODO: Fix my weird iterator.
 public class PokerGame {
     private Phase currentPhase;
     private ArrayList<Player> players;
@@ -44,7 +46,7 @@ public class PokerGame {
         this.smallBlind = 0;
         this.bigBlind = 0;
         this.currentPhase = Phase.DEAL;
-        this.playerIterator = new CircularIterator<>(players, 1);
+        this.playerIterator = new CircularIterator<>(players, 0);
     }
     public void setupDummyPlayers(int numPlayers, int startMoney) {
         if (numPlayers < 2) {
@@ -61,7 +63,6 @@ public class PokerGame {
     public void payBlinds(){
         //pay blinds
         Player smallPlayer = playerIterator.next();
-        Player bigPlayer = playerIterator.next();
         if (smallPlayer.canBet(smallBlind)) {
             smallPlayer.bet(smallBlind);
         } else if (smallPlayer.getChips() != 0) {
@@ -69,6 +70,7 @@ public class PokerGame {
             smallPlayer.allIn();
             //TODO: Handle split pot
         }
+        Player bigPlayer = playerIterator.next();
         if (bigPlayer.canBet(bigBlind)) {
             bigPlayer.bet(bigBlind);
         } else if (bigPlayer.getChips() != 0) {
@@ -111,7 +113,12 @@ public class PokerGame {
      * Call this method at the end of a round to eliminate any losers without chips.
      */
     public void cleanOutLosers() {
-                    //TODO: Finish function
+        //TODO: Finish function
+        for(Player player:players){
+            if(player.getChips()<=0){
+                players.remove(player);
+            }
+        }
     }
 
     private int collectToPot() {

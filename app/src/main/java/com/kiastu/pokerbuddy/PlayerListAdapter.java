@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.kiastu.pokerbuddy.model.Player;
@@ -16,10 +17,12 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Pl
 
     private List<Player> playerList;
     private Context context;
+    private int currentPlayerIndex;
 
     public PlayerListAdapter(Context context, List<Player> playerList) {
         this.playerList = playerList;
         this.context = context;
+        this.currentPlayerIndex = 0;
 
     }
 
@@ -39,6 +42,10 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Pl
         } else {
             playerViewHolder.foldedText.setText("No");
         }
+        if(position == currentPlayerIndex){
+            // this is the player who's turn it is currently. Change the color.
+            playerViewHolder.rowView.setBackgroundColor(R.color.player_selected);
+        }
     }
 
     @Override
@@ -50,18 +57,21 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Pl
 
         return new PlayerViewHolder(itemView);
     }
-        public void setSelected(int index) {
-    //TODO: Change color in list for selected index.
+
+    public void setSelected(int index) {
+        currentPlayerIndex = index;
     }
 
     public static class PlayerViewHolder extends RecyclerView.ViewHolder {
+        protected LinearLayout rowView;
         protected TextView nameText;
         protected TextView chipsText;
         protected TextView currentBetText;
         protected TextView foldedText;
 
-        public PlayerViewHolder(View v){
+        public PlayerViewHolder(View v) {
             super(v);
+            rowView = (LinearLayout) v.findViewById(R.id.player_row);
             nameText = (TextView) v.findViewById(R.id.text_player_name);
             chipsText = (TextView) v.findViewById(R.id.text_player_chips);
             currentBetText = (TextView) v.findViewById(R.id.text_player_current_bet);
@@ -69,4 +79,11 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Pl
         }
     }
 
+    public List<Player> getPlayerList() {
+        return playerList;
+    }
+
+    public void setPlayerList(List<Player> playerList) {
+        this.playerList = playerList;
+    }
 }

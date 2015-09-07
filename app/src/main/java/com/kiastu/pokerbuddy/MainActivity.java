@@ -16,7 +16,6 @@ import com.kiastu.pokerbuddy.model.PlayerAction;
 
 
 //TODO: Write unit test for logic
-//TODO: Add next phase/ next round button
 public class MainActivity extends Activity {
 
     private PokerGame game;
@@ -24,6 +23,7 @@ public class MainActivity extends Activity {
     private EditText raiseField;
     private PlayerListAdapter playerListAdapter;
     private RecyclerView playerListView;
+    private boolean firstPass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +65,9 @@ public class MainActivity extends Activity {
     }
 
     private void startGame() {
+        game = new PokerGame();
+        game.setupDummyPlayers(5,10000);
+        playerListAdapter.notifyDataSetChanged();
         playRound();
     }
 
@@ -79,7 +82,7 @@ public class MainActivity extends Activity {
         ngButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // create new game.
+                startGame();
             }
         });
         callButton.setOnClickListener(new View.OnClickListener() {
@@ -123,7 +126,9 @@ public class MainActivity extends Activity {
     }
 
     private void updateUi() {
-
+        //TODO: Consider passing only changes to the adapter, and doing a full sync periodically? (improves efficency)
+        playerListAdapter.setPlayerList(game.getPlayers());
+        playerListAdapter.notifyDataSetChanged();
     }
 
     public void playRound() {
@@ -138,6 +143,7 @@ public class MainActivity extends Activity {
             game.payBlinds();
         }
         enableButtons();
+        firstPass = true;
     }
 
     public void endPhase() {
@@ -155,7 +161,12 @@ public class MainActivity extends Activity {
 
     public void takeTurn(PlayerAction.Action action) {
         disableButtons();
-        Player currentPlayer = game.getCurrentPlayer();
+        Player currentPlayer = game.getNextPlayer();
+
+        if (currentPlayer.equals(game.getRoundStarter()) && !game.isBetRaised()&&!firstPass) {
+            endPhase();
+        }
+
         if (currentPlayer.isFolded() || currentPlayer.isAllIn()) {
             game.getNextPlayer();
             return;
@@ -170,6 +181,8 @@ public class MainActivity extends Activity {
                 if (currentPlayer.canBet(game.getHighestBet())) {
                     currentPlayer.call(game.getHighestBet());
                 } else {
+                    //TODO: Provide notification that calling is not possible.
+                    enableButtons();
                     return;
                 }
                 break;
@@ -183,6 +196,8 @@ public class MainActivity extends Activity {
                 if (currentPlayer.canBet(raiseAmount) && raiseAmount > game.getHighestBet()) {
                     game.raise(raiseAmount);
                 } else {
+                    //TODO: Provide notification that raising the amount is not possible.
+                    enableButtons();
                     return;
                 }
                 break;
@@ -192,11 +207,8 @@ public class MainActivity extends Activity {
                 break;
             }
         }
-        currentPlayer = game.getNextPlayer();
-        if (currentPlayer.equals(game.getRoundStarter()) && !game.isBetRaised()) {
-            endPhase();
-        }
         playerListAdapter.setSelected(game.getPlayerIterator().getIndex());
+        firstPass = false;
         enableButtons();
         updateUi();
     }
