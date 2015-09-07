@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kiastu.pokerbuddy.model.Phase;
 import com.kiastu.pokerbuddy.model.Player;
@@ -26,6 +27,7 @@ public class MainActivity extends Activity {
     private RecyclerView playerListView;
     private TextView highestBetText, potText;
     private boolean firstPass;
+    private boolean lastActionValid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +37,7 @@ public class MainActivity extends Activity {
         initText();
         disableButtons();
         newGame();
+        lastActionValid = true;
         playerListAdapter = new PlayerListAdapter(this, game.getPlayers());
         playerListView = (RecyclerView) findViewById(R.id.player_list);
         playerListView.setHasFixedSize(true);
@@ -169,60 +172,65 @@ public class MainActivity extends Activity {
         if (game.nextPhase() == Phase.DEAL) {
             //new round.
             game.startRound();
-            return;
+
+        }else {
+            Toast toast = Toast.makeText(this,"The phase is over.",Toast.LENGTH_LONG);
+            toast.show();
         }
     }
 
     public void takeTurn(PlayerAction.Action action) {
         disableButtons();
-        Player currentPlayer = game.getNextPlayer();
+        Player currentPlayer = lastActionValid ? game.getNextPlayer() : game.getCurrentPlayer();
 
-        if (currentPlayer.equals(game.getRoundStarter()) && !game.isBetRaised() && !firstPass) {
-            endPhase();
-        }
-
-        if (currentPlayer.isFolded() || currentPlayer.isAllIn()) {
-            game.getNextPlayer();
+        if (currentPlayer.isFolded() || currentPlayer.isAllIn()) {//check if folded or all in.
+            takeTurn(action);//go to the next person.
             return;
-        }
-        if (game.isBetRaised() && currentPlayer.equals(game.getRaiser())) {
-            //end the phase. We've come back to the same person.
-            endPhase();
         }
         int raiseAmount = Integer.parseInt(raiseField.getText().toString());
         switch (action) {
             case CALL: {
                 if (currentPlayer.canBet(game.getHighestBet())) {
                     currentPlayer.call(game.getHighestBet());
+                    lastActionValid = true;
                 } else {
                     //TODO: Provide notification that calling is not possible.
                     enableButtons();
+                    lastActionValid = false;
                     return;
                 }
                 break;
             }
             case FOLD: {
                 currentPlayer.fold();
+                lastActionValid = true;
                 break;
             }
             case RAISE: {
                 //check valid raise
                 if (currentPlayer.canBet(raiseAmount) && raiseAmount > game.getHighestBet()) {
                     game.raise(raiseAmount);
+                    lastActionValid = true;
                 } else {
                     //TODO: Provide notification that raising the amount is not possible.
                     enableButtons();
+                    lastActionValid = false;
                     return;
                 }
                 break;
             }
             case ALLIN: {
-                currentPlayer.allIn();
+                game.allIn();
+                lastActionValid = true;
                 break;
             }
         }
         firstPass = false;
         enableButtons();
         updateUi();
+        //tl;dr: check if the next player is a player that shouldn't have a turn.
+        if ((game.peekNextPlayer().equals(game.getRaiser()) && game.isBetRaised())||(game.peekNextPlayer().equals(game.getRoundStarter()) && !game.isBetRaised())) {
+            endPhase();
+        }
     }
 }

@@ -260,6 +260,10 @@ public class PokerGame {
     public int getCurrentPlayerIndex(){
         return playerIterator.getIndex();
     }
+
+    public Player peekNextPlayer(){
+        return playerIterator.peekNext();
+    }
     public class CircularIterator implements Iterator<Player> {
         private int index = 0;
 
@@ -281,8 +285,17 @@ public class PokerGame {
             }
             Player nextItem = players.get(index);
             currentPlayer = nextItem;
-
             return nextItem;
+        }
+        public Player peekNext(){
+            int tempIndex = index;
+            if (tempIndex == players.size() - 1) {
+                //reached the end of the array, loop back.
+                tempIndex = 0;
+            }else{
+                tempIndex++;
+            }
+            return players.get(tempIndex);
         }
         public void setCurrent(Player player){
             players.set(index, player);
