@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
         initButtons();
         disableButtons();
         startGame();
-        playerListAdapter = new PlayerListAdapter(this,game.getPlayers());
+        playerListAdapter = new PlayerListAdapter(this,game.getPlayers(),game.getCurrentPlayerIndex());
         playerListView = (RecyclerView)findViewById(R.id.player_list);
         playerListView.setHasFixedSize(true);
         playerListView.setLayoutManager(new LinearLayoutManager(this));
@@ -132,10 +132,7 @@ public class MainActivity extends Activity {
     }
 
     public void startPhase() {
-        game.setCurrentPlayer(game.getRoundStarter());
-        if (game.getCurrentPhase() == Phase.DEAL) {
-            game.payBlinds();
-        }
+        game.startPhase();
         enableButtons();
         firstPass = true;
     }
@@ -149,8 +146,6 @@ public class MainActivity extends Activity {
             game.startRound();
             return;
         }
-        game.getPlayerIterator().setIndex(game.getDealerIndex() + 1);
-
     }
 
     public void takeTurn(PlayerAction.Action action) {
@@ -201,7 +196,7 @@ public class MainActivity extends Activity {
                 break;
             }
         }
-        playerListAdapter.setSelected(game.getPlayerIterator().getIndex());
+        playerListAdapter.setSelected(game.getCurrentPlayerIndex());
         firstPass = false;
         enableButtons();
         updateUi();

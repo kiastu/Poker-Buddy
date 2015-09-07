@@ -60,7 +60,13 @@ public class PokerGame {
 
     public void startRound(){
         currentPhase = Phase.DEAL;
-        playerIterator.setIndex(dealerIndex + 1);
+        playerIterator.setIndex(dealerIndex);
+    }
+    public void startPhase(){
+        currentPlayer = roundStarter;
+        if (currentPhase == Phase.DEAL) {
+            payBlinds();
+        }
     }
     //Maybe put startPhase here?
     public void payBlinds(){
@@ -232,14 +238,6 @@ public class PokerGame {
         this.raiser = raiser;
     }
 
-    public CircularIterator getPlayerIterator() {
-        return playerIterator;
-    }
-
-    public void setPlayerIterator(CircularIterator playerIterator) {
-        this.playerIterator = playerIterator;
-    }
-
     public Player getNextPlayer(){
         return this.playerIterator.next();
     }
@@ -259,7 +257,9 @@ public class PokerGame {
     public void setCurrentPlayer(Player currentPlayer) {
         this.currentPlayer = currentPlayer;
     }
-
+    public int getCurrentPlayerIndex(){
+        return playerIterator.getIndex();
+    }
     public class CircularIterator implements Iterator<Player> {
         private int index = 0;
 

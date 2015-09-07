@@ -19,10 +19,10 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Pl
     private Context context;
     private int currentPlayerIndex;
 
-    public PlayerListAdapter(Context context, List<Player> playerList) {
+    public PlayerListAdapter(Context context, List<Player> playerList, int currentPlayerIndex) {
         this.playerList = playerList;
         this.context = context;
-        this.currentPlayerIndex = 0;
+        setSelected(currentPlayerIndex);
 
     }
 
@@ -44,7 +44,9 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Pl
         }
         if(position == currentPlayerIndex){
             // this is the player who's turn it is currently. Change the color.
-            playerViewHolder.rowView.setBackgroundColor(R.color.player_selected);
+            playerViewHolder.rowView.setBackgroundColor(context.getResources().getColor(R.color.player_selected));
+        }else{
+            playerViewHolder.rowView.setBackgroundColor(context.getResources().getColor(R.color.player_list_background));
         }
     }
 
@@ -59,9 +61,11 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Pl
     }
 
     public void setSelected(int index) {
-        currentPlayerIndex = index;
+        if(index+1 >=playerList.size()){
+            currentPlayerIndex = 0;
+        }
+        currentPlayerIndex = index + 1;
     }
-
     public static class PlayerViewHolder extends RecyclerView.ViewHolder {
         protected LinearLayout rowView;
         protected TextView nameText;
