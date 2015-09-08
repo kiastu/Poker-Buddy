@@ -225,12 +225,13 @@ public class MainActivity extends Activity {
                 break;
             }
         }
-        firstPass = false;
         enableButtons();
         updateUi();
         //tl;dr: check if the next player is a player that shouldn't have a turn.
-        if ((game.peekNextPlayer().equals(game.getRaiser()) && game.isBetRaised())||(game.peekNextPlayer().equals(game.getRoundStarter()) && !game.isBetRaised())) {
+        if ((game.peekNextPlayer().equals(game.getRaiser()) && game.isBetRaised())||(game.peekNextPlayer().equals(game.getRoundStarter()) && !game.isBetRaised()&&!firstPass)) {
             endPhase();
         }
+        firstPass = false;
+
     }
 }

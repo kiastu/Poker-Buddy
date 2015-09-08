@@ -3,4 +3,9 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <!-- Choose Winner Dialog-->
+    <string name="dialog_choose_winner">Choose the winner(s)</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 </resources>
