@@ -1,7 +1,7 @@
 package com.kiastu.pokerbuddy;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
@@ -12,13 +12,16 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.kiastu.pokerbuddy.dialog.ChooseWinnerDialogFragment;
 import com.kiastu.pokerbuddy.model.Phase;
 import com.kiastu.pokerbuddy.model.Player;
 import com.kiastu.pokerbuddy.model.PlayerAction;
 
+import java.util.ArrayList;
+
 
 //TODO: Write unit test for logic
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
 
     private PokerGame game;
     private Button ngButton, callButton, foldButton, raiseButton, allInButton;
@@ -168,13 +171,23 @@ public class MainActivity extends Activity {
     public void endPhase() {
 
         //TODO: Collect chips and and reset table.
-        Phase gamePhase = game.nextPhase();
-        if (gamePhase == Phase.DEAL) {
+        Phase currentPhase = game.getCurrentPhase();
+        Phase nextPhase = game.nextPhase();
+        if (nextPhase == Phase.DEAL) {
             //new round.
+            ArrayList<Player> playerList = game.getPlayers();
+            ArrayList<String> playerNames = new ArrayList<>();
+            for (Player player : playerList) {
+                if (!player.isFolded()) {
+                    playerNames.add(player.getName());
+                }
+            }
+            ChooseWinnerDialogFragment winnerDialog = ChooseWinnerDialogFragment.newInstance(playerNames);
+            winnerDialog.show(getSupportFragmentManager(), "chooseWinner");
             game.startRound();
 
-        }else {
-            Toast toast = Toast.makeText(this,"The "+game.getCurrentPhase()+" is over.",Toast.LENGTH_LONG);
+        } else {
+            Toast toast = Toast.makeText(this, "The " + currentPhase + " is over. Beginning the " + nextPhase, Toast.LENGTH_LONG);
             toast.show();
         }
     }
@@ -228,7 +241,7 @@ public class MainActivity extends Activity {
         enableButtons();
         updateUi();
         //tl;dr: check if the next player is a player that shouldn't have a turn.
-        if ((game.peekNextPlayer().equals(game.getRaiser()) && game.isBetRaised())||(game.peekNextPlayer().equals(game.getRoundStarter()) && !game.isBetRaised()&&!firstPass)) {
+        if ((game.peekNextPlayer().equals(game.getRaiser()) && game.isBetRaised()) || (game.peekNextPlayer().equals(game.getRoundStarter()) && !game.isBetRaised() && !firstPass)) {
             endPhase();
         }
         firstPass = false;
