@@ -168,13 +168,13 @@ public class MainActivity extends Activity {
     public void endPhase() {
 
         //TODO: Collect chips and and reset table.
-
-        if (game.nextPhase() == Phase.DEAL) {
+        Phase gamePhase = game.nextPhase();
+        if (gamePhase == Phase.DEAL) {
             //new round.
             game.startRound();
 
         }else {
-            Toast toast = Toast.makeText(this,"The phase is over.",Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(this,"The "+game.getCurrentPhase()+" is over.",Toast.LENGTH_LONG);
             toast.show();
         }
     }

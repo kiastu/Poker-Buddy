@@ -1,99 +1,130 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity"
     android:orientation="vertical">
-    <Button
-        android:id="@+id/button_new_game"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:padding="3dp"
-        android:text="New Game"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/button_new_game"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:padding="3dp"
+            android:text="New Game" />
+
+        <Button
+            android:id="@+id/button_next_phase"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:padding="3dp"
+            android:text="Next Phase" />
+
+    </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:orientation="horizontal">
+
         <Button
             android:id="@+id/button_call"
             android:text="Call"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
+
         <Button
             android:id="@+id/button_fold"
             android:text="Fold"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
+
         <Button
             android:id="@+id/button_raise"
             android:text="Raise"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
+
         <Button
             android:id="@+id/button_all_in"
             android:text="All In"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
     </LinearLayout>
+
     <EditText
         android:id="@+id/edit_raise_amount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="number"
-        android:text="0"/>
+        android:text="0" />
 
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:orientation="vertical">
+
         <TableRow
             android:id="@+id/player_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <TextView
-                android:text = "Name"
+                android:text="Name"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_column="0"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
+
             <TextView
                 android:text="Chips"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_column="1"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
+
             <TextView
                 android:text="Current Bet"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_column="2"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
+
             <TextView
                 android:text="Folded?"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_column="3"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
         </TableRow>
     </TableLayout>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/player_list"
         android:layout_width="match_parent"
-        android:layout_height="275dp"/>
+        android:layout_height="275dp" />
+
     <TextView
         android:id="@+id/text_pot_amount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pot Amount: -"/>
+        android:text="Pot Amount: -" />
+
     <TextView
         android:id="@+id/text_highest_bet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Highest Bet: - "/>
+        android:text="Highest Bet: - " />
 </LinearLayout>
